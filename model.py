@@ -47,7 +47,8 @@ def model(model_df):
     
     pred_df = model_df
     pred_df.insert(1,'Predicted Finishing Pos',pd.Series(y_hat,index=X_test.index))
-    pred_df['Driver'] = pd.Series(model_df['Driver'],index=X_test.index)
+    pred_df.insert(1,'Driver',pd.Series(model_df['Driver'],index=X_test.index))
+    pred_df.insert(2,'Current vs. Predicted',pred_df['Predicted Finishing Pos']-pred_df['Pos'])
     pred_df = pred_df.drop(columns=pred_df.columns[-3:])
     return pred_df
 
