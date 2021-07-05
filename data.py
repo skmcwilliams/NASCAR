@@ -86,13 +86,9 @@ class Gen_6(Soup):
         return final_df
     
             
-           
-live = Live()
-leader_df = live.get_leaderboard()
-"""
-gen = Gen_6()
-hist_df = gen.get_stats(2013,2021)
-hist_df = hist_df[hist_df['Finish']!='Finish'] 
-hist_df = hist_df.drop(columns='Unnamed: 0',errors='ignore')
-hist_df.to_csv('gen6_stats.csv')
-"""
+if __name__=='__main__':           
+    gen = Gen_6()
+    hist_df = gen.get_stats(2013,2021)
+    hist_df = hist_df[hist_df['Finish']!='Finish'] 
+    hist_df = hist_df.drop(columns='Unnamed: 0',errors='ignore')
+    hist_df.to_csv('gen6_stats.csv')

@@ -31,11 +31,11 @@ def model(model_df):
     y_train = train_df['Finish']
     
     test_dummy = 'Make'
-    model_df = pd.concat([model_df,pd.get_dummies(model_df[test_dummy],drop_first=False)], axis=1) #Create dummy variables, drop first to remove colinearity
-    model_df = model_df.drop(columns=test_dummy)
-    model_df = model_df.drop(columns='Driver')
+    model_prep_df_1 = pd.concat([model_df,pd.get_dummies(model_df[test_dummy],drop_first=False)], axis=1) #Create dummy variables, drop first to remove colinearity
+    model_prep_df_2 = model_prep_df_1.drop(columns=test_dummy)
+    model_df_final = model_prep_df_2.drop(columns='Driver')
     
-    X_test = model_df[model_df.columns.difference(['Pos'])]
+    X_test = model_df_final[model_df_final.columns.difference(['Pos'])]
     model = XGBRegressor(n_jobs=-1,learning_rate=0.01,n_estimators=1000)
     
     model.fit(X_train,y_train)
@@ -47,13 +47,13 @@ def model(model_df):
     
     pred_df = model_df
     pred_df.insert(1,'Predicted Finishing Pos',pd.Series(y_hat,index=X_test.index))
-    pred_df.insert(1,'Driver',pd.Series(model_df['Driver'],index=X_test.index))
+    #pred_df.insert(1,'Driver',pd.Series(model_df['Driver'],index=X_test.index))
     pred_df.insert(2,'Current vs. Predicted',pred_df['Predicted Finishing Pos']-pred_df['Pos'])
-    pred_df = pred_df.drop(columns=pred_df.columns[-3:])
+   # pred_df = pred_df.drop(columns=pred_df.columns[-3:])
     return pred_df
 
 def clean_df(df):
-    df = df.drop(columns=df.columns[4:])
+    df = df.drop(columns=df.columns[5:])
     return df
     
 

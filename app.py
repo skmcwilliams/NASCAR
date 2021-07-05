@@ -20,10 +20,10 @@ live_df = clean_df(live_df)
 model_df = model(live_df)
 
 fig = go.Figure(data=[go.Table(
-    header=dict(values=list(model_df.columns[1:]),
+    header=dict(values=list(model_df.columns),
                 fill_color='paleturquoise',
                 align='left'),
-    cells=dict(values=[model_df[i] for i in model_df.columns[1:]],
+    cells=dict(values=[model_df[i] for i in model_df.columns],
                fill_color='silver',
                align='left'))
 ])
