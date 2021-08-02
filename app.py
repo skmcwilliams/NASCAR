@@ -21,10 +21,10 @@ model_df = model(live_df)
 
 fig = go.Figure(data=[go.Table(
     header=dict(values=list(model_df.columns),
-                fill_color='paleturquoise',
+                fill_color='silver',
                 align='left'),
     cells=dict(values=[model_df[i] for i in model_df.columns],
-               fill_color='silver',
+               fill_color='lightblue',
                align='left'))
 ])
 

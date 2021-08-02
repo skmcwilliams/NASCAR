@@ -8,6 +8,7 @@ Created on Sun Jun 27 16:15:03 2021
 import pandas as pd
 from bs4 import BeautifulSoup as bs
 import requests
+import time
 
 class Soup():
     def __init__(self):
@@ -56,39 +57,51 @@ class Gen_6(Soup):
     def format_df(self,df):
         df.rename(columns={'#':'Car #'}, inplace=True)
         df = df[:-1]
+        df = df[df['Finish']!='Finish'] 
         df['Car #'] = df['Car #'].apply(lambda x: x.strip('#'))
-        df['Car #'] = pd.to_numeric(df['Car #'],errors='ignore')
-        df['Start'] = pd.to_numeric(df['Start'],errors='ignore')
-        df['Finish'] = pd.to_numeric(df['Finish'],errors='ignore')
+        df['Car #'] = list(map(int,df['Car #']))
+        df['Start'] = list(map(int,df['Start']))
+        df['Finish'] = list(map(int,df['Finish']))
+        df = df.drop(columns='Unnamed: 0',errors='ignore')
         return df
     
-    def get_stats(self,start_year,end_year):
+    def get_links(self,start_year,end_year):
         s = Soup()
-        main_df = pd.DataFrame()
         for season in range(start_year,end_year+1):
             soup = s.get_soup(url=f'https://www.driveraverages.com/nascar/year.php?yr_id={season}')
             div = soup.find('div',class_='clearfix')
             hrefs = div.find_all('a',href=True)
-            links = [r['href'] for r in hrefs if 'race' in r['href']] #links to all race results
-            
-            for l in links:
-                soup_2 = s.get_soup(f'https://www.driveraverages.com/nascar/{l}')
-                stats = soup_2.find('table',class_="sortable tabledata-nascar table-large") #race results table
-                race = soup_2.find('table',class_='tabledata-wrapper') # getting track name from table
-                track_name = race.find('th').text.split()[:-3] # get track name, ignore date
-                track = ''.join(track_name) # join in case track is mulitple words
-                df = pd.read_html(str(stats))[0]
-                df['track'] = track
-                df['season'] = season
-                main_df = main_df.append(df)
-        
-        final_df = self.format_df(main_df)
-        return final_df
+            for r in hrefs:
+                if 'race' in r['href']:
+                    yield r['href']
+
+    def get_stats(self,links):
+        s = Soup()
+        #main_df = pd.DataFrame()
+        for l in list(links):
+            soup_2 = s.get_soup(f'https://www.driveraverages.com/nascar/{l}')
+            stats = soup_2.find('table',class_="sortable tabledata-nascar table-large") #race results table
+            race = soup_2.find('table',class_='tabledata-wrapper') # getting track name from table
+            track_name = race.find('th').text.split()[:-3] # get track name, ignore date
+            track = ''.join(track_name) # join in case track is mulitple words
+            df = pd.read_html(str(stats))[0]
+            df['track'] = track
+            #main_df = main_df.append(df)
+            yield df
     
+    def concat(self,df_list):
+        dfs = list(df_list)
+        df = pd.concat(dfs)
+        return df
             
-if __name__=='__main__':           
+if __name__=='__main__':
+    start = time.time()         
     gen = Gen_6()
-    hist_df = gen.get_stats(2013,2021)
-    hist_df = hist_df[hist_df['Finish']!='Finish'] 
-    hist_df = hist_df.drop(columns='Unnamed: 0',errors='ignore')
-    hist_df.to_csv('gen6_stats.csv')
+    links = gen.get_links(2013,2021)
+    season_dfs = gen.get_stats(links)
+    hist_df = gen.concat(season_dfs)
+    hist_df = gen.format_df(hist_df)
+    hist_df.to_csv('gen6_stats_generators.csv')
+    end = time.time()
+    runtime = (end-start)/60
+    print(f'runtime of {runtime} mins')
