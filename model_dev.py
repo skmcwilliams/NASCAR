@@ -12,10 +12,11 @@ from sklearn.model_selection import train_test_split,cross_val_score
 from sklearn.metrics import mean_absolute_error
 
 base_df = pd.read_csv('gen6_stats.csv')
-base_df = base_df.drop(columns = ['Unnamed: 0','S1','S2','S3','Pts','Laps','Led','Status','Rating','Team','track','Driver'])
+df = base_df.drop(columns = ['Unnamed: 0','S1','S2','S3','Pts','Laps','Led','Status','Rating','Team','track','Driver'])
+df['Car #'] = list(map(str,df['Car #']))
 
-dummy_cols='Make'
-df = pd.concat([base_df,pd.get_dummies(base_df[dummy_cols],drop_first=False)], axis=1) #Create dummy variables, drop first to remove colinearity
+dummy_cols=['Make','Car #']
+df = pd.concat([df,pd.get_dummies(df[dummy_cols],drop_first=False)], axis=1) #Create dummy variables, drop first to remove colinearity
 df = df.drop(columns=dummy_cols)
 
 target = 'Finish'
@@ -25,7 +26,7 @@ y = df[target]
 X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.05,
                                                     random_state=6)
 
-model = XGBRegressor(n_jobs=-1,learning_rate=0.01,n_estimators=500)
+model = XGBRegressor(n_jobs=-1,learning_rate=0.01,n_estimators=1000)
 
 model.fit(X_train,y_train)
 y_hat = model.predict(X_test)
@@ -39,9 +40,6 @@ print(f'Average CV MAE Score: {np.mean(cv_score)*-1}')
 
 pred_df = base_df
 pred_df.insert(1,'Predicted Finishing Pos',pd.Series(y_hat,index=X_test.index))
-pred_df = pred_df[pred_df['Predicted Finishing Pos']>0]
-
-
 
 
 

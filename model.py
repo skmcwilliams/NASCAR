@@ -23,7 +23,7 @@ def model(model_df):
     train_df = train_df.drop(columns = ['Unnamed: 0','Driver','S1','S2','S3','Pts','Laps','Led'
                         ,'Status','Rating','Team','track'])
 
-    dummy_cols= 'Make'
+    dummy_cols= ['Make','Car #']
     train_df = pd.concat([train_df,pd.get_dummies(train_df[dummy_cols],drop_first=False)], axis=1) #Create dummy variables, drop first to remove colinearity
     train_df = train_df.drop(columns=dummy_cols)
     
